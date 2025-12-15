@@ -760,6 +760,7 @@ export default function BenchmarkDashboard() {
                             />
                           }
                           cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
+                          isAnimationActive={false}
                         />
                         <Bar dataKey="successRate" radius={[0, 4, 4, 0]}>
                           {successRateData.map((entry, index) => (
@@ -818,6 +819,7 @@ export default function BenchmarkDashboard() {
                             />
                           }
                           cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
+                          isAnimationActive={false}
                         />
                         <Bar dataKey="costCents" radius={[0, 4, 4, 0]}>
                           {costData.map((entry, index) => (
@@ -876,6 +878,7 @@ export default function BenchmarkDashboard() {
                             />
                           }
                           cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
+                          isAnimationActive={false}
                         />
                         <Bar dataKey="speedSeconds" radius={[0, 4, 4, 0]}>
                           {speedData.map((entry, index) => (
@@ -989,6 +992,7 @@ export default function BenchmarkDashboard() {
                           })()}
                         <Tooltip
                           cursor={false}
+                          isAnimationActive={false}
                           content={({ active, payload }) => {
                             if (active && payload && payload.length) {
                               const data = payload[0].payload;
