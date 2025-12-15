@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import * as React from "react";
 import {
   BarChart,
@@ -460,15 +460,17 @@ function CustomBarTooltip({
 }
 
 // Custom Y-axis tick with provider icon
-function CustomYAxisTick({ x, y, payload }: any) {
-  const ProviderIcon = getProviderIconByModelName(payload.value);
+function CustomYAxisTick({ x, y, payload, showIcon = true }: any) {
+  const ProviderIcon = showIcon
+    ? getProviderIconByModelName(payload.value)
+    : null;
   const iconSize = 14;
   const iconMargin = 6;
 
   return (
     <g transform={`translate(${x},${y})`}>
       <text
-        x={-iconSize - iconMargin}
+        x={ProviderIcon ? -iconSize - iconMargin : -5}
         y={0}
         dy={4}
         textAnchor="end"
@@ -531,6 +533,8 @@ function CustomScatterShape(props: any) {
   );
 }
 
+const STORAGE_KEY = "skatebench-selected-models";
+
 export { BenchmarkDashboard };
 export default function BenchmarkDashboard() {
   const [selectedModels, setSelectedModels] = useState<Set<string>>(
@@ -539,6 +543,43 @@ export default function BenchmarkDashboard() {
   const [hoveredPoint, setHoveredPoint] = useState<string | null>(null);
   const [isHorizontal, setIsHorizontal] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Load selected models from localStorage on mount
+  useEffect(() => {
+    setIsClient(true);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    // Load from localStorage
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSelectedModels(new Set(parsed));
+        }
+      }
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Save selected models to localStorage when they change
+  useEffect(() => {
+    if (!isClient) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedModels]));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  }, [selectedModels, isClient]);
 
   const [zoomArea, setZoomArea] = useState<{
     x1: number | null;
@@ -634,8 +675,12 @@ export default function BenchmarkDashboard() {
 
   const yAxisWidth = useMemo(() => {
     const longest = getLongestModelNameLength(filteredData);
+    // Smaller width on mobile
+    if (isMobile) {
+      return Math.max(100, Math.min(150, longest * 6 + 10));
+    }
     return Math.max(150, Math.min(220, longest * 7 + 20));
-  }, [filteredData]);
+  }, [filteredData, isMobile]);
 
   const { combinedData, defaultXDomain, defaultYDomain } = useMemo(() => {
     const data = filteredData.map((d) => ({
@@ -764,45 +809,51 @@ export default function BenchmarkDashboard() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-md border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
               />
-              <ScrollArea className="h-[360px] xl:h-[560px] pr-4">
-                <div className="space-y-2">
-                  {filteredModelList.map((item) => {
-                    const index = benchmarkData.findIndex(
-                      (b) => b.model === item.model,
-                    );
-                    const ProviderIcon = getProviderIconByModelName(item.model);
-                    return (
-                      <div
-                        key={item.model}
-                        className="flex items-center gap-3 py-1"
-                      >
-                        <Checkbox
-                          id={item.model}
-                          checked={selectedModels.has(item.model)}
-                          onCheckedChange={() => toggleModel(item.model)}
-                        />
-                        {ProviderIcon ? (
-                          <ProviderIcon className="w-4 h-4 flex-shrink-0" />
-                        ) : (
-                          <div
-                            className="w-4 h-4 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: getModelColor(index) }}
-                          />
-                        )}
-                        <label
-                          htmlFor={item.model}
-                          className="text-sm cursor-pointer flex-1 truncate"
+              <div className="relative">
+                <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-card to-transparent pointer-events-none z-10 rounded-t-md" />
+                <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none z-10 rounded-b-md" />
+                <ScrollArea className="h-[360px] xl:h-[560px]">
+                  <div className="space-y-2 px-1 py-2">
+                    {filteredModelList.map((item) => {
+                      const index = benchmarkData.findIndex(
+                        (b) => b.model === item.model,
+                      );
+                      const ProviderIcon = getProviderIconByModelName(
+                        item.model,
+                      );
+                      return (
+                        <div
+                          key={item.model}
+                          className="flex items-center gap-3 py-1"
                         >
-                          {item.model}
-                        </label>
-                        <span className="text-xs text-muted-foreground">
-                          {item.successRate.toFixed(1)}%
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
+                          <Checkbox
+                            id={item.model}
+                            checked={selectedModels.has(item.model)}
+                            onCheckedChange={() => toggleModel(item.model)}
+                          />
+                          {ProviderIcon ? (
+                            <ProviderIcon className="w-4 h-4 flex-shrink-0" />
+                          ) : (
+                            <div
+                              className="w-4 h-4 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: getModelColor(index) }}
+                            />
+                          )}
+                          <label
+                            htmlFor={item.model}
+                            className="text-sm cursor-pointer flex-1 truncate"
+                          >
+                            {item.model}
+                          </label>
+                          <span className="text-xs text-muted-foreground">
+                            {item.successRate.toFixed(1)}%
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </div>
             </CardContent>
           </Card>
 
@@ -848,76 +899,83 @@ export default function BenchmarkDashboard() {
                 </FrameHeader>
                 <FramePanel>
                   <div style={{ height: isHorizontal ? chartHeight : 500 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        key={`success-${successRateData.length}`}
-                        data={successRateData}
-                        layout={isHorizontal ? "vertical" : "horizontal"}
-                        margin={
-                          isHorizontal
-                            ? {
-                                top: 5,
-                                right: 30,
-                                left: yAxisWidth - 100,
-                                bottom: 5,
-                              }
-                            : { top: 20, right: 30, left: 20, bottom: 100 }
-                        }
+                    {isClient && (
+                      <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                        minWidth={0}
+                        minHeight={0}
                       >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          horizontal={isHorizontal ? false : true}
-                          vertical={isHorizontal ? true : false}
-                        />
-                        {isHorizontal ? (
-                          <>
-                            <XAxis type="number" domain={[0, 100]} unit="%" />
-                            <YAxis
-                              type="category"
-                              dataKey="model"
-                              width={yAxisWidth}
-                              tick={<CustomYAxisTick />}
-                              tickLine={false}
-                              interval={0}
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <XAxis
-                              type="category"
-                              dataKey="model"
-                              tick={{
-                                fontSize: 10,
-                                angle: -45,
-                                textAnchor: "end",
-                              }}
-                              tickLine={false}
-                              interval={0}
-                              height={80}
-                            />
-                            <YAxis type="number" domain={[0, 100]} unit="%" />
-                          </>
-                        )}
-                        <Tooltip
-                          content={
-                            <CustomBarTooltip
-                              valueLabel="Success Rate"
-                              valueSuffix="%"
-                            />
+                        <BarChart
+                          key={`success-${successRateData.length}`}
+                          data={successRateData}
+                          layout={isHorizontal ? "vertical" : "horizontal"}
+                          margin={
+                            isHorizontal
+                              ? {
+                                  top: 5,
+                                  right: isMobile ? 10 : 30,
+                                  left: isMobile ? 10 : yAxisWidth - 100,
+                                  bottom: 5,
+                                }
+                              : { top: 20, right: 10, left: 10, bottom: 100 }
                           }
-                          cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
-                          isAnimationActive={false}
-                        />
-                        <Bar
-                          dataKey="successRate"
-                          radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
                         >
-                          {successRateData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            horizontal={isHorizontal ? false : true}
+                            vertical={isHorizontal ? true : false}
+                          />
+                          {isHorizontal ? (
+                            <>
+                              <XAxis type="number" domain={[0, 100]} unit="%" />
+                              <YAxis
+                                type="category"
+                                dataKey="model"
+                                width={yAxisWidth}
+                                tick={<CustomYAxisTick showIcon={!isMobile} />}
+                                tickLine={false}
+                                interval={0}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <XAxis
+                                type="category"
+                                dataKey="model"
+                                tick={{
+                                  fontSize: 10,
+                                  angle: -45,
+                                  textAnchor: "end",
+                                }}
+                                tickLine={false}
+                                interval={0}
+                                height={80}
+                              />
+                              <YAxis type="number" domain={[0, 100]} unit="%" />
+                            </>
+                          )}
+                          <Tooltip
+                            content={
+                              <CustomBarTooltip
+                                valueLabel="Success Rate"
+                                valueSuffix="%"
+                              />
+                            }
+                            cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
+                            isAnimationActive={false}
+                          />
+                          <Bar
+                            dataKey="successRate"
+                            radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
+                          >
+                            {successRateData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </FramePanel>
               </Frame>
@@ -954,77 +1012,84 @@ export default function BenchmarkDashboard() {
                 </FrameHeader>
                 <FramePanel>
                   <div style={{ height: isHorizontal ? chartHeight : 500 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        key={`cost-${costData.length}`}
-                        data={costData}
-                        layout={isHorizontal ? "vertical" : "horizontal"}
-                        margin={
-                          isHorizontal
-                            ? {
-                                top: 5,
-                                right: 30,
-                                left: yAxisWidth - 100,
-                                bottom: 5,
-                              }
-                            : { top: 20, right: 30, left: 20, bottom: 100 }
-                        }
+                    {isClient && (
+                      <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                        minWidth={0}
+                        minHeight={0}
                       >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          horizontal={isHorizontal ? false : true}
-                          vertical={isHorizontal ? true : false}
-                        />
-                        {isHorizontal ? (
-                          <>
-                            <XAxis type="number" unit="¢" />
-                            <YAxis
-                              type="category"
-                              dataKey="model"
-                              width={yAxisWidth}
-                              tick={<CustomYAxisTick />}
-                              tickLine={false}
-                              interval={0}
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <XAxis
-                              type="category"
-                              dataKey="model"
-                              tick={{
-                                fontSize: 10,
-                                angle: -45,
-                                textAnchor: "end",
-                              }}
-                              tickLine={false}
-                              interval={0}
-                              height={80}
-                            />
-                            <YAxis type="number" unit="¢" />
-                          </>
-                        )}
-                        <Tooltip
-                          content={
-                            <CustomBarTooltip
-                              valueLabel="Cost/Test"
-                              valueSuffix="¢"
-                              valueKey="costCents"
-                            />
+                        <BarChart
+                          key={`cost-${costData.length}`}
+                          data={costData}
+                          layout={isHorizontal ? "vertical" : "horizontal"}
+                          margin={
+                            isHorizontal
+                              ? {
+                                  top: 5,
+                                  right: isMobile ? 10 : 30,
+                                  left: isMobile ? 10 : yAxisWidth - 100,
+                                  bottom: 5,
+                                }
+                              : { top: 20, right: 10, left: 10, bottom: 100 }
                           }
-                          cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
-                          isAnimationActive={false}
-                        />
-                        <Bar
-                          dataKey="costCents"
-                          radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
                         >
-                          {costData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            horizontal={isHorizontal ? false : true}
+                            vertical={isHorizontal ? true : false}
+                          />
+                          {isHorizontal ? (
+                            <>
+                              <XAxis type="number" unit="¢" />
+                              <YAxis
+                                type="category"
+                                dataKey="model"
+                                width={yAxisWidth}
+                                tick={<CustomYAxisTick showIcon={!isMobile} />}
+                                tickLine={false}
+                                interval={0}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <XAxis
+                                type="category"
+                                dataKey="model"
+                                tick={{
+                                  fontSize: 10,
+                                  angle: -45,
+                                  textAnchor: "end",
+                                }}
+                                tickLine={false}
+                                interval={0}
+                                height={80}
+                              />
+                              <YAxis type="number" unit="¢" />
+                            </>
+                          )}
+                          <Tooltip
+                            content={
+                              <CustomBarTooltip
+                                valueLabel="Cost/Test"
+                                valueSuffix="¢"
+                                valueKey="costCents"
+                              />
+                            }
+                            cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
+                            isAnimationActive={false}
+                          />
+                          <Bar
+                            dataKey="costCents"
+                            radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
+                          >
+                            {costData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </FramePanel>
               </Frame>
@@ -1061,77 +1126,84 @@ export default function BenchmarkDashboard() {
                 </FrameHeader>
                 <FramePanel>
                   <div style={{ height: isHorizontal ? chartHeight : 500 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        key={`speed-${speedData.length}`}
-                        data={speedData}
-                        layout={isHorizontal ? "vertical" : "horizontal"}
-                        margin={
-                          isHorizontal
-                            ? {
-                                top: 5,
-                                right: 30,
-                                left: yAxisWidth - 100,
-                                bottom: 5,
-                              }
-                            : { top: 20, right: 30, left: 20, bottom: 100 }
-                        }
+                    {isClient && (
+                      <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                        minWidth={0}
+                        minHeight={0}
                       >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          horizontal={isHorizontal ? false : true}
-                          vertical={isHorizontal ? true : false}
-                        />
-                        {isHorizontal ? (
-                          <>
-                            <XAxis type="number" unit="s" />
-                            <YAxis
-                              type="category"
-                              dataKey="model"
-                              width={yAxisWidth}
-                              tick={<CustomYAxisTick />}
-                              tickLine={false}
-                              interval={0}
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <XAxis
-                              type="category"
-                              dataKey="model"
-                              tick={{
-                                fontSize: 10,
-                                angle: -45,
-                                textAnchor: "end",
-                              }}
-                              tickLine={false}
-                              interval={0}
-                              height={80}
-                            />
-                            <YAxis type="number" unit="s" />
-                          </>
-                        )}
-                        <Tooltip
-                          content={
-                            <CustomBarTooltip
-                              valueLabel="Avg Time"
-                              valueSuffix="s"
-                              valueKey="speedSeconds"
-                            />
+                        <BarChart
+                          key={`speed-${speedData.length}`}
+                          data={speedData}
+                          layout={isHorizontal ? "vertical" : "horizontal"}
+                          margin={
+                            isHorizontal
+                              ? {
+                                  top: 5,
+                                  right: isMobile ? 10 : 30,
+                                  left: isMobile ? 10 : yAxisWidth - 100,
+                                  bottom: 5,
+                                }
+                              : { top: 20, right: 10, left: 10, bottom: 100 }
                           }
-                          cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
-                          isAnimationActive={false}
-                        />
-                        <Bar
-                          dataKey="speedSeconds"
-                          radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
                         >
-                          {speedData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            horizontal={isHorizontal ? false : true}
+                            vertical={isHorizontal ? true : false}
+                          />
+                          {isHorizontal ? (
+                            <>
+                              <XAxis type="number" unit="s" />
+                              <YAxis
+                                type="category"
+                                dataKey="model"
+                                width={yAxisWidth}
+                                tick={<CustomYAxisTick showIcon={!isMobile} />}
+                                tickLine={false}
+                                interval={0}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <XAxis
+                                type="category"
+                                dataKey="model"
+                                tick={{
+                                  fontSize: 10,
+                                  angle: -45,
+                                  textAnchor: "end",
+                                }}
+                                tickLine={false}
+                                interval={0}
+                                height={80}
+                              />
+                              <YAxis type="number" unit="s" />
+                            </>
+                          )}
+                          <Tooltip
+                            content={
+                              <CustomBarTooltip
+                                valueLabel="Avg Time"
+                                valueSuffix="s"
+                                valueKey="speedSeconds"
+                              />
+                            }
+                            cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
+                            isAnimationActive={false}
+                          />
+                          <Bar
+                            dataKey="speedSeconds"
+                            radius={isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
+                          >
+                            {speedData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </FramePanel>
               </Frame>
@@ -1158,128 +1230,141 @@ export default function BenchmarkDashboard() {
                 </FrameHeader>
                 <FramePanel>
                   <div className="h-[600px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ScatterChart
-                        margin={{ top: 40, right: 30, left: 20, bottom: 60 }}
-                        onMouseDown={handleMouseDown}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseUp}
+                    {isClient && (
+                      <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                        minWidth={0}
+                        minHeight={0}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          type="number"
-                          dataKey="x"
-                          name="Total Cost"
-                          unit="$"
-                          domain={xDomain}
-                          allowDataOverflow
+                        <ScatterChart
+                          margin={{ top: 40, right: 30, left: 20, bottom: 60 }}
+                          onMouseDown={handleMouseDown}
+                          onMouseMove={handleMouseMove}
+                          onMouseUp={handleMouseUp}
+                          onMouseLeave={handleMouseUp}
                         >
-                          <Label
-                            value="Total Cost ($)"
-                            offset={-10}
-                            position="insideBottom"
-                          />
-                        </XAxis>
-                        <YAxis
-                          type="number"
-                          dataKey="y"
-                          name="Success Rate"
-                          unit="%"
-                          domain={yDomain}
-                          allowDataOverflow
-                        >
-                          <Label
-                            value="Success Rate (%)"
-                            angle={-90}
-                            position="insideLeft"
-                            style={{ textAnchor: "middle" }}
-                          />
-                        </YAxis>
-                        <ZAxis range={[80, 80]} />
-                        {isSelecting &&
-                          zoomArea.x1 !== null &&
-                          zoomArea.x2 !== null &&
-                          zoomArea.y1 !== null &&
-                          zoomArea.y2 !== null && (
-                            <ReferenceArea
-                              x1={zoomArea.x1}
-                              x2={zoomArea.x2}
-                              y1={zoomArea.y1}
-                              y2={zoomArea.y2}
-                              strokeOpacity={0.3}
-                              fill="hsl(215, 100%, 50%)"
-                              fillOpacity={0.15}
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis
+                            type="number"
+                            dataKey="x"
+                            name="Total Cost"
+                            unit="$"
+                            domain={xDomain}
+                            allowDataOverflow
+                            tickFormatter={(value) =>
+                              `${Number(value.toFixed(2))}`
+                            }
+                          >
+                            <Label
+                              value="Total Cost ($)"
+                              offset={-10}
+                              position="insideBottom"
                             />
-                          )}
-                        {hoveredPoint &&
-                          (() => {
-                            const entry = combinedData.find(
-                              (d) => d.model === hoveredPoint,
-                            );
-                            if (!entry) return null;
-                            return (
-                              <>
-                                <ReferenceLine
-                                  x={entry.x}
-                                  stroke={entry.color}
-                                  strokeDasharray="5 5"
-                                  strokeWidth={2}
-                                />
-                                <ReferenceLine
-                                  y={entry.y}
-                                  stroke={entry.color}
-                                  strokeDasharray="5 5"
-                                  strokeWidth={2}
-                                />
-                              </>
-                            );
-                          })()}
-                        <Tooltip
-                          cursor={false}
-                          isAnimationActive={false}
-                          content={({ active, payload }) => {
-                            if (active && payload && payload.length) {
-                              const data = payload[0].payload;
-                              return (
-                                <div className="bg-card text-card-foreground border border-border rounded-lg p-3 shadow-lg">
-                                  <p className="font-semibold">{data.model}</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Success Rate: {data.successRate.toFixed(2)}%
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Total Cost: ${data.totalCost.toFixed(4)}
-                                  </p>
-                                </div>
+                          </XAxis>
+                          <YAxis
+                            type="number"
+                            dataKey="y"
+                            name="Success Rate"
+                            unit="%"
+                            domain={yDomain}
+                            allowDataOverflow
+                          >
+                            <Label
+                              value="Success Rate (%)"
+                              angle={-90}
+                              position="insideLeft"
+                              style={{ textAnchor: "middle" }}
+                            />
+                          </YAxis>
+                          <ZAxis range={[80, 80]} />
+                          {isSelecting &&
+                            zoomArea.x1 !== null &&
+                            zoomArea.x2 !== null &&
+                            zoomArea.y1 !== null &&
+                            zoomArea.y2 !== null && (
+                              <ReferenceArea
+                                x1={zoomArea.x1}
+                                x2={zoomArea.x2}
+                                y1={zoomArea.y1}
+                                y2={zoomArea.y2}
+                                strokeOpacity={0.3}
+                                fill="hsl(215, 100%, 50%)"
+                                fillOpacity={0.15}
+                              />
+                            )}
+                          {hoveredPoint &&
+                            (() => {
+                              const entry = combinedData.find(
+                                (d) => d.model === hoveredPoint,
                               );
-                            }
-                            return null;
-                          }}
-                        />
-                        <Scatter
-                          data={combinedData}
-                          shape={<CustomScatterShape />}
-                          onMouseEnter={(data: any) => {
-                            if (data?.payload?.model) {
-                              setHoveredPoint(data.payload.model);
-                            }
-                          }}
-                          onMouseLeave={() => setHoveredPoint(null)}
-                        >
-                          <LabelList
-                            dataKey="model"
-                            position="top"
-                            offset={12}
-                            style={{
-                              fontSize: 10,
-                              fill: "#888888",
-                              pointerEvents: "none",
+                              if (!entry) return null;
+                              return (
+                                <>
+                                  <ReferenceLine
+                                    x={entry.x}
+                                    stroke={entry.color}
+                                    strokeDasharray="5 5"
+                                    strokeWidth={2}
+                                  />
+                                  <ReferenceLine
+                                    y={entry.y}
+                                    stroke={entry.color}
+                                    strokeDasharray="5 5"
+                                    strokeWidth={2}
+                                  />
+                                </>
+                              );
+                            })()}
+                          <Tooltip
+                            cursor={false}
+                            isAnimationActive={false}
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload;
+                                return (
+                                  <div className="bg-card text-card-foreground border border-border rounded-lg p-3 shadow-lg">
+                                    <p className="font-semibold">
+                                      {data.model}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Success Rate:{" "}
+                                      {data.successRate.toFixed(2)}%
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Total Cost: ${data.totalCost.toFixed(4)}
+                                    </p>
+                                  </div>
+                                );
+                              }
+                              return null;
                             }}
-                            fill="#888888"
                           />
-                        </Scatter>
-                      </ScatterChart>
-                    </ResponsiveContainer>
+                          <Scatter
+                            data={combinedData}
+                            shape={<CustomScatterShape />}
+                            onMouseEnter={(data: any) => {
+                              if (data?.payload?.model) {
+                                setHoveredPoint(data.payload.model);
+                              }
+                            }}
+                            onMouseLeave={() => setHoveredPoint(null)}
+                          >
+                            <LabelList
+                              dataKey="model"
+                              position="top"
+                              offset={12}
+                              style={{
+                                fontSize: 10,
+                                fill: "#888888",
+                                pointerEvents: "none",
+                              }}
+                              fill="#888888"
+                            />
+                          </Scatter>
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </FramePanel>
               </Frame>
