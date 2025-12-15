@@ -831,6 +831,7 @@ export default function BenchmarkDashboard() {
                   <div style={{ height: isHorizontal ? chartHeight : 500 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
+                        key={`success-${successRateData.length}`}
                         data={successRateData}
                         layout={isHorizontal ? "vertical" : "horizontal"}
                         margin={
@@ -936,6 +937,7 @@ export default function BenchmarkDashboard() {
                   <div style={{ height: isHorizontal ? chartHeight : 500 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
+                        key={`cost-${costData.length}`}
                         data={costData}
                         layout={isHorizontal ? "vertical" : "horizontal"}
                         margin={
@@ -1042,6 +1044,7 @@ export default function BenchmarkDashboard() {
                   <div style={{ height: isHorizontal ? chartHeight : 500 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
+                        key={`speed-${speedData.length}`}
                         data={speedData}
                         layout={isHorizontal ? "vertical" : "horizontal"}
                         margin={
