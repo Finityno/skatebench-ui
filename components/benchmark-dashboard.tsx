@@ -1294,7 +1294,10 @@ export default function BenchmarkDashboard() {
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseUp}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="hsl(0 0% 40%)"
+                        />
                         <XAxis
                           type="number"
                           dataKey="x"
@@ -1302,9 +1305,12 @@ export default function BenchmarkDashboard() {
                           unit="$"
                           domain={xDomain}
                           allowDataOverflow
-                          tickFormatter={(value) =>
-                            `${Number(value.toFixed(2))}`
-                          }
+                          tickFormatter={(value) => {
+                            if (value >= 1) {
+                              return `${Math.round(value * 2) / 2}`;
+                            }
+                            return `${Math.round(value * 10) / 10}`;
+                          }}
                         >
                           <Label
                             value="Total Cost ($)"
@@ -1390,6 +1396,7 @@ export default function BenchmarkDashboard() {
                         <Scatter
                           data={combinedData}
                           shape={<CustomScatterShape />}
+                          isAnimationActive={false}
                           onMouseEnter={(data: any) => {
                             if (data?.payload?.model) {
                               setHoveredPoint(data.payload.model);
@@ -1403,10 +1410,9 @@ export default function BenchmarkDashboard() {
                             offset={12}
                             style={{
                               fontSize: 10,
-                              fill: "#888888",
                               pointerEvents: "none",
                             }}
-                            fill="#888888"
+                            fill="hsl(0 0% 65%)"
                           />
                         </Scatter>
                       </ScatterChart>
