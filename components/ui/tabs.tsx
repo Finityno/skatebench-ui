@@ -29,7 +29,7 @@ const tabsListVariants = cva(
     variants: {
       variant: {
         default: "bg-muted text-muted-foreground/72",
-        line: "gap-1 bg-transparent data-[orientation=vertical]:px-1 data-[orientation=horizontal]:py-1 *:data-[slot=tabs-trigger]:hover:bg-accent",
+        line: "gap-1 bg-transparent data-[orientation=vertical]:px-1 data-[orientation=horizontal]:py-1",
       },
     },
     defaultVariants: {
