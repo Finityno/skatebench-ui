@@ -26,9 +26,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { ModelSelector } from "@/components/model-selector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Frame,
@@ -535,19 +534,69 @@ function CustomScatterShape(props: any) {
 }
 
 const STORAGE_KEY = "skatebench-selected-models";
+const STORAGE_KEY_HORIZONTAL = "skatebench-is-horizontal";
+const STORAGE_KEY_COMMAND_SELECTOR = "skatebench-use-command-selector";
+const STORAGE_KEY_SHOW_PERCENTAGES = "skatebench-show-percentages";
+
+// Helper to safely read from localStorage
+function getStorageItem<T>(
+  key: string,
+  defaultValue: T,
+  parser?: (val: string) => T,
+): T {
+  if (typeof window === "undefined") return defaultValue;
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved === null) return defaultValue;
+    if (parser) return parser(saved);
+    return saved as unknown as T;
+  } catch {
+    return defaultValue;
+  }
+}
+
+// Helper to safely write to localStorage
+function setStorageItem(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(
+      key,
+      typeof value === "string" ? value : JSON.stringify(value),
+    );
+  } catch {
+    // Ignore localStorage errors
+  }
+}
 
 export { BenchmarkDashboard };
 export default function BenchmarkDashboard() {
-  const [selectedModels, setSelectedModels] = useState<Set<string>>(
-    () => new Set(benchmarkData.slice(0, 10).map((d) => d.model)),
-  );
+  const [selectedModels, setSelectedModels] = useState<Set<string>>(() => {
+    const saved = getStorageItem<string[] | null>(STORAGE_KEY, null, (val) => {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+    });
+    return saved
+      ? new Set(saved)
+      : new Set(benchmarkData.slice(0, 10).map((d) => d.model));
+  });
   const [hoveredPoint, setHoveredPoint] = useState<string | null>(null);
-  const [isHorizontal, setIsHorizontal] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isHorizontal, setIsHorizontal] = useState(() =>
+    getStorageItem(STORAGE_KEY_HORIZONTAL, true, (val) => val === "true"),
+  );
+
   const [isMobile, setIsMobile] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [useCommandSelector, setUseCommandSelector] = useState(() =>
+    getStorageItem(
+      STORAGE_KEY_COMMAND_SELECTOR,
+      false,
+      (val) => val === "true",
+    ),
+  );
+  const [showPercentages, setShowPercentages] = useState(() =>
+    getStorageItem(STORAGE_KEY_SHOW_PERCENTAGES, true, (val) => val === "true"),
+  );
 
-  // Load selected models from localStorage on mount
+  // Handle resize on mount
   useEffect(() => {
     setIsClient(true);
     const handleResize = () => {
@@ -555,32 +604,29 @@ export default function BenchmarkDashboard() {
     };
     handleResize();
     window.addEventListener("resize", handleResize);
-
-    // Load from localStorage
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setSelectedModels(new Set(parsed));
-        }
-      }
-    } catch (e) {
-      // Ignore localStorage errors
-    }
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Save selected models to localStorage when they change
+  // Save preferences to localStorage when they change
   useEffect(() => {
     if (!isClient) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...selectedModels]));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    setStorageItem(STORAGE_KEY, [...selectedModels]);
   }, [selectedModels, isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+    setStorageItem(STORAGE_KEY_HORIZONTAL, String(isHorizontal));
+  }, [isHorizontal, isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+    setStorageItem(STORAGE_KEY_COMMAND_SELECTOR, String(useCommandSelector));
+  }, [useCommandSelector, isClient]);
+
+  useEffect(() => {
+    if (!isClient) return;
+    setStorageItem(STORAGE_KEY_SHOW_PERCENTAGES, String(showPercentages));
+  }, [showPercentages, isClient]);
 
   const [zoomArea, setZoomArea] = useState<{
     x1: number | null;
@@ -665,14 +711,6 @@ export default function BenchmarkDashboard() {
       }))
       .sort((a, b) => a.speedSeconds - b.speedSeconds);
   }, [filteredData]);
-
-  const filteredModelList = useMemo(() => {
-    if (!searchQuery.trim()) return benchmarkData;
-    const query = searchQuery.toLowerCase();
-    return benchmarkData.filter((item) =>
-      item.model.toLowerCase().includes(query),
-    );
-  }, [searchQuery]);
 
   const yAxisWidth = useMemo(() => {
     const longest = getLongestModelNameLength(filteredData);
@@ -819,89 +857,60 @@ export default function BenchmarkDashboard() {
           {/* Model Selector */}
           <Card className="h-fit xl:sticky xl:top-8">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Model Selector</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Model Selector</CardTitle>
+                <div className="flex gap-1">
+                  <Badge
+                    variant={showPercentages ? "default" : "outline"}
+                    className="cursor-pointer text-xs"
+                    onClick={() => setShowPercentages(!showPercentages)}
+                    tabIndex={0}
+                    role="switch"
+                    aria-checked={showPercentages}
+                    aria-label="Show percentages"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setShowPercentages(!showPercentages);
+                      }
+                    }}
+                  >
+                    %
+                  </Badge>
+                  <Badge
+                    variant={useCommandSelector ? "default" : "outline"}
+                    className="cursor-pointer text-xs"
+                    onClick={() => setUseCommandSelector(!useCommandSelector)}
+                    tabIndex={0}
+                    role="switch"
+                    aria-checked={useCommandSelector}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setUseCommandSelector(!useCommandSelector);
+                      }
+                    }}
+                  >
+                    {useCommandSelector ? "Command" : "List"}
+                  </Badge>
+                </div>
+              </div>
               <CardDescription>
                 {selectedModels.size} of {benchmarkData.length} models selected
               </CardDescription>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Badge
-                  variant="outline"
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={selectAll}
-                >
-                  All
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={selectNone}
-                >
-                  None
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={selectTop10}
-                >
-                  Top 10
-                </Badge>
-              </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <input
-                type="text"
-                placeholder="Search models..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-md border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              <ModelSelector
+                models={benchmarkData}
+                selectedModels={selectedModels}
+                onToggleModel={toggleModel}
+                onSelectAll={selectAll}
+                onSelectNone={selectNone}
+                onSelectTop10={selectTop10}
+                getModelColor={getModelColor}
+                showPercentages={showPercentages}
+                mode={useCommandSelector ? "command" : "list"}
               />
-              <div className="relative">
-                <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-card to-transparent pointer-events-none z-10 rounded-t-md" />
-                <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none z-10 rounded-b-md" />
-                <ScrollArea className="h-[360px] xl:h-[560px]">
-                  <div className="space-y-2 px-1 py-2">
-                    {filteredModelList.map((item) => {
-                      const index = benchmarkData.findIndex(
-                        (b) => b.model === item.model,
-                      );
-                      const ProviderIcon = getProviderIconByModelName(
-                        item.model,
-                      );
-                      return (
-                        <div
-                          key={item.model}
-                          className="flex items-center gap-3 py-1"
-                        >
-                          <Checkbox
-                            id={item.model}
-                            checked={selectedModels.has(item.model)}
-                            onCheckedChange={() => toggleModel(item.model)}
-                          />
-                          {ProviderIcon ? (
-                            <ProviderIcon className="w-4 h-4 flex-shrink-0" />
-                          ) : (
-                            <div
-                              className="w-4 h-4 rounded-full flex-shrink-0"
-                              style={{
-                                backgroundColor: getModelColor(index),
-                              }}
-                            />
-                          )}
-                          <label
-                            htmlFor={item.model}
-                            className="text-sm cursor-pointer flex-1 truncate"
-                          >
-                            {item.model}
-                          </label>
-                          <span className="text-xs text-muted-foreground">
-                            {item.successRate.toFixed(1)}%
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              </div>
             </CardContent>
           </Card>
 
