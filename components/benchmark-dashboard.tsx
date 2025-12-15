@@ -538,6 +538,7 @@ export default function BenchmarkDashboard() {
   );
   const [hoveredPoint, setHoveredPoint] = useState<string | null>(null);
   const [isHorizontal, setIsHorizontal] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [zoomArea, setZoomArea] = useState<{
     x1: number | null;
@@ -622,6 +623,14 @@ export default function BenchmarkDashboard() {
       }))
       .sort((a, b) => a.speedSeconds - b.speedSeconds);
   }, [filteredData]);
+
+  const filteredModelList = useMemo(() => {
+    if (!searchQuery.trim()) return benchmarkData;
+    const query = searchQuery.toLowerCase();
+    return benchmarkData.filter((item) =>
+      item.model.toLowerCase().includes(query),
+    );
+  }, [searchQuery]);
 
   const yAxisWidth = useMemo(() => {
     const longest = getLongestModelNameLength(filteredData);
@@ -747,10 +756,20 @@ export default function BenchmarkDashboard() {
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[400px] xl:h-[600px] pr-4">
+            <CardContent className="space-y-3">
+              <input
+                type="text"
+                placeholder="Search models..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-md border border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              />
+              <ScrollArea className="h-[360px] xl:h-[560px] pr-4">
                 <div className="space-y-2">
-                  {benchmarkData.map((item, index) => {
+                  {filteredModelList.map((item) => {
+                    const index = benchmarkData.findIndex(
+                      (b) => b.model === item.model,
+                    );
                     const ProviderIcon = getProviderIconByModelName(item.model);
                     return (
                       <div
