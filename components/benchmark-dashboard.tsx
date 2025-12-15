@@ -1295,8 +1295,8 @@ export default function BenchmarkDashboard() {
                         onMouseLeave={handleMouseUp}
                       >
                         <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="hsl(0 0% 40%)"
+                          strokeDasharray="1 3"
+                          stroke="hsl(0 0% 35%)"
                         />
                         <XAxis
                           type="number"
@@ -1305,12 +1305,8 @@ export default function BenchmarkDashboard() {
                           unit="$"
                           domain={xDomain}
                           allowDataOverflow
-                          tickFormatter={(value) => {
-                            if (value >= 1) {
-                              return `${Math.round(value * 2) / 2}`;
-                            }
-                            return `${Math.round(value * 10) / 10}`;
-                          }}
+                          tickCount={6}
+                          tickFormatter={(value) => `${Math.round(value)}`}
                         >
                           <Label
                             value="Total Cost ($)"
@@ -1412,7 +1408,7 @@ export default function BenchmarkDashboard() {
                               fontSize: 10,
                               pointerEvents: "none",
                             }}
-                            fill="hsl(0 0% 65%)"
+                            fill="hsl(0 0% 85%)"
                           />
                         </Scatter>
                       </ScatterChart>
