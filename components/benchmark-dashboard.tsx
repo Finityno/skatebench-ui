@@ -1326,30 +1326,6 @@ export default function BenchmarkDashboard() {
                           />
                         </YAxis>
                         <ZAxis range={[80, 80]} />
-
-                        {hoveredPoint &&
-                          (() => {
-                            const entry = combinedData.find(
-                              (d) => d.model === hoveredPoint,
-                            );
-                            if (!entry) return null;
-                            return (
-                              <>
-                                <ReferenceLine
-                                  x={entry.x}
-                                  stroke={entry.color}
-                                  strokeDasharray="5 5"
-                                  strokeWidth={2}
-                                />
-                                <ReferenceLine
-                                  y={entry.y}
-                                  stroke={entry.color}
-                                  strokeDasharray="5 5"
-                                  strokeWidth={2}
-                                />
-                              </>
-                            );
-                          })()}
                         <Tooltip
                           cursor={false}
                           isAnimationActive={false}
@@ -1383,15 +1359,8 @@ export default function BenchmarkDashboard() {
                                 newSet.delete(model);
                                 return newSet;
                               });
-                              setHoveredPoint(null);
                             }
                           }}
-                          onMouseEnter={(data: any) => {
-                            if (data?.payload?.model) {
-                              setHoveredPoint(data.payload.model);
-                            }
-                          }}
-                          onMouseLeave={() => setHoveredPoint(null)}
                         >
                           <LabelList
                             dataKey="model"
