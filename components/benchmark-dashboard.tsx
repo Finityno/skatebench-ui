@@ -1289,10 +1289,6 @@ export default function BenchmarkDashboard() {
                     >
                       <ScatterChart
                         margin={{ top: 40, right: 30, left: 20, bottom: 60 }}
-                        onMouseDown={handleMouseDown}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseUp}
                       >
                         <CartesianGrid
                           strokeDasharray="1 3"
@@ -1330,21 +1326,7 @@ export default function BenchmarkDashboard() {
                           />
                         </YAxis>
                         <ZAxis range={[80, 80]} />
-                        {isSelecting &&
-                          zoomArea.x1 !== null &&
-                          zoomArea.x2 !== null &&
-                          zoomArea.y1 !== null &&
-                          zoomArea.y2 !== null && (
-                            <ReferenceArea
-                              x1={zoomArea.x1}
-                              x2={zoomArea.x2}
-                              y1={zoomArea.y1}
-                              y2={zoomArea.y2}
-                              strokeOpacity={0.3}
-                              fill="hsl(215, 100%, 50%)"
-                              fillOpacity={0.15}
-                            />
-                          )}
+
                         {hoveredPoint &&
                           (() => {
                             const entry = combinedData.find(
@@ -1393,6 +1375,17 @@ export default function BenchmarkDashboard() {
                           data={combinedData}
                           shape={<CustomScatterShape />}
                           isAnimationActive={false}
+                          onClick={(data: any) => {
+                            if (data?.payload?.model) {
+                              const model = data.payload.model;
+                              setSelectedModels((prev) => {
+                                const newSet = new Set(prev);
+                                newSet.delete(model);
+                                return newSet;
+                              });
+                              setHoveredPoint(null);
+                            }
+                          }}
                           onMouseEnter={(data: any) => {
                             if (data?.payload?.model) {
                               setHoveredPoint(data.payload.model);

@@ -127,6 +127,15 @@
     }
 }
 
+/* Remove focus outline on recharts elements */
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-surface,
+.recharts-surface * {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 @keyframes skeleton {
     to {
         background-position: -200% 0;
