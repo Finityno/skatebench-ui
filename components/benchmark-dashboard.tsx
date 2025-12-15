@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback } from "react";
 import {
   BarChart,
   Bar,
@@ -17,15 +17,28 @@ import {
   Cell,
   LabelList,
   ZAxis,
-} from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Frame, FramePanel, FrameHeader, FrameTitle, FrameDescription } from "@/components/ui/frame"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { Button } from "@/components/ui/button"
+} from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Frame,
+  FramePanel,
+  FrameHeader,
+  FrameTitle,
+  FrameDescription,
+} from "@/components/ui/frame";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { getProviderIconByModelName } from "@/lib/provider-icons";
 
 const benchmarkData = [
   {
@@ -379,7 +392,7 @@ const benchmarkData = [
     totalCost: 0.1423,
     averageCostPerTest: 0.00068,
   },
-]
+];
 
 const MODEL_COLORS = [
   "#22c55e", // green
@@ -402,118 +415,136 @@ const MODEL_COLORS = [
   "#64748b", // slate
   "#78716c", // stone
   "#71717a", // zinc
-]
+];
 
 const getModelColor = (index: number): string => {
-  return MODEL_COLORS[index % MODEL_COLORS.length]
-}
+  return MODEL_COLORS[index % MODEL_COLORS.length];
+};
 
 const getLongestModelNameLength = (data: { model: string }[]): number => {
-  return Math.max(...data.map((d) => d.model.length))
-}
+  return Math.max(...data.map((d) => d.model.length));
+};
 
-function CustomBarTooltip({ active, payload, valueLabel, valueSuffix, valueKey }: any) {
+function CustomBarTooltip({
+  active,
+  payload,
+  valueLabel,
+  valueSuffix,
+  valueKey,
+}: any) {
   if (active && payload && payload.length) {
-    const data = payload[0].payload
+    const data = payload[0].payload;
     return (
       <div className="bg-card text-card-foreground border border-border rounded-lg p-3 shadow-lg">
         <p className="font-semibold">{data.model}</p>
         <p className="text-sm text-muted-foreground">
-          {valueLabel}: {typeof payload[0].value === "number" ? payload[0].value.toFixed(2) : payload[0].value}
+          {valueLabel}:{" "}
+          {typeof payload[0].value === "number"
+            ? payload[0].value.toFixed(2)
+            : payload[0].value}
           {valueSuffix}
         </p>
       </div>
-    )
+    );
   }
-  return null
+  return null;
 }
 
-export { BenchmarkDashboard }
+export { BenchmarkDashboard };
 export default function BenchmarkDashboard() {
   const [selectedModels, setSelectedModels] = useState<Set<string>>(
     () => new Set(benchmarkData.slice(0, 10).map((d) => d.model)),
-  )
-  const [hoveredPoint, setHoveredPoint] = useState<string | null>(null)
+  );
+  const [hoveredPoint, setHoveredPoint] = useState<string | null>(null);
 
   const [zoomArea, setZoomArea] = useState<{
-    x1: number | null
-    y1: number | null
-    x2: number | null
-    y2: number | null
-  }>({ x1: null, y1: null, x2: null, y2: null })
+    x1: number | null;
+    y1: number | null;
+    x2: number | null;
+    y2: number | null;
+  }>({ x1: null, y1: null, x2: null, y2: null });
   const [zoomedDomain, setZoomedDomain] = useState<{
-    x: [number, number] | null
-    y: [number, number] | null
-  }>({ x: null, y: null })
-  const [isSelecting, setIsSelecting] = useState(false)
+    x: [number, number] | null;
+    y: [number, number] | null;
+  }>({ x: null, y: null });
+  const [isSelecting, setIsSelecting] = useState(false);
 
   const toggleModel = (model: string) => {
-    const newSelected = new Set(selectedModels)
+    const newSelected = new Set(selectedModels);
     if (newSelected.has(model)) {
-      newSelected.delete(model)
+      newSelected.delete(model);
     } else {
-      newSelected.add(model)
+      newSelected.add(model);
     }
-    setSelectedModels(newSelected)
-  }
+    setSelectedModels(newSelected);
+  };
 
   const selectAll = () => {
-    setSelectedModels(new Set(benchmarkData.map((d) => d.model)))
-  }
+    setSelectedModels(new Set(benchmarkData.map((d) => d.model)));
+  };
 
   const selectNone = () => {
-    setSelectedModels(new Set())
-  }
+    setSelectedModels(new Set());
+  };
 
   const selectTop10 = () => {
-    setSelectedModels(new Set(benchmarkData.slice(0, 10).map((d) => d.model)))
-  }
+    setSelectedModels(new Set(benchmarkData.slice(0, 10).map((d) => d.model)));
+  };
 
   const filteredData = useMemo(() => {
-    return benchmarkData.filter((d) => selectedModels.has(d.model))
-  }, [selectedModels])
+    return benchmarkData.filter((d) => selectedModels.has(d.model));
+  }, [selectedModels]);
 
   const chartHeight = useMemo(() => {
-    const baseHeight = 400
-    const perModelHeight = 28
-    const minHeight = 300
-    const calculatedHeight = Math.max(minHeight, filteredData.length * perModelHeight + 60)
-    return Math.min(calculatedHeight, 800)
-  }, [filteredData.length])
+    const baseHeight = 400;
+    const perModelHeight = 28;
+    const minHeight = 300;
+    const calculatedHeight = Math.max(
+      minHeight,
+      filteredData.length * perModelHeight + 60,
+    );
+    return Math.min(calculatedHeight, 800);
+  }, [filteredData.length]);
 
   const successRateData = useMemo(() => {
     return filteredData
       .map((d) => ({
         ...d,
-        color: getModelColor(benchmarkData.findIndex((b) => b.model === d.model)),
+        color: getModelColor(
+          benchmarkData.findIndex((b) => b.model === d.model),
+        ),
       }))
-      .sort((a, b) => b.successRate - a.successRate)
-  }, [filteredData])
+      .sort((a, b) => b.successRate - a.successRate);
+  }, [filteredData]);
 
   const costData = useMemo(() => {
     return filteredData
       .map((d) => ({
         ...d,
         costCents: d.averageCostPerTest * 100,
-        color: getModelColor(benchmarkData.findIndex((b) => b.model === d.model)),
+        color: getModelColor(
+          benchmarkData.findIndex((b) => b.model === d.model),
+        ),
       }))
-      .sort((a, b) => a.costCents - b.costCents)
-  }, [filteredData])
+      .sort((a, b) => a.costCents - b.costCents);
+  }, [filteredData]);
 
   const speedData = useMemo(() => {
     return filteredData
       .map((d) => ({
         ...d,
         speedSeconds: d.averageDuration / 1000,
-        color: getModelColor(benchmarkData.findIndex((b) => b.model === d.model)),
+        color: getModelColor(
+          benchmarkData.findIndex((b) => b.model === d.model),
+        ),
       }))
-      .sort((a, b) => a.speedSeconds - b.speedSeconds)
-  }, [filteredData])
+      .sort((a, b) => a.speedSeconds - b.speedSeconds);
+  }, [filteredData]);
 
   const yAxisWidth = useMemo(() => {
-    const longest = getLongestModelNameLength(filteredData)
-    return Math.max(150, Math.min(220, longest * 7 + 20))
-  }, [filteredData])
+    const longest = getLongestModelNameLength(filteredData);
+    return Math.max(150, Math.min(220, longest * 7 + 20));
+  }, [filteredData]);
 
   const { combinedData, defaultXDomain, defaultYDomain } = useMemo(() => {
     const data = filteredData.map((d) => ({
@@ -521,68 +552,83 @@ export default function BenchmarkDashboard() {
       x: d.totalCost,
       y: d.successRate,
       color: getModelColor(benchmarkData.findIndex((b) => b.model === d.model)),
-    }))
+    }));
 
-    const costs = data.map((d) => d.x)
-    const maxCost = Math.max(...costs)
+    const costs = data.map((d) => d.x);
+    const maxCost = Math.max(...costs);
 
     return {
       combinedData: data,
       defaultXDomain: [0, maxCost * 1.1] as [number, number],
       defaultYDomain: [0, 100] as [number, number],
-    }
-  }, [filteredData])
+    };
+  }, [filteredData]);
 
-  const xDomain = zoomedDomain.x || defaultXDomain
-  const yDomain = zoomedDomain.y || defaultYDomain
+  const xDomain = zoomedDomain.x || defaultXDomain;
+  const yDomain = zoomedDomain.y || defaultYDomain;
 
   const handleMouseDown = useCallback((e: any) => {
     if (e && e.xValue !== undefined && e.yValue !== undefined) {
-      setZoomArea({ x1: e.xValue, y1: e.yValue, x2: null, y2: null })
-      setIsSelecting(true)
+      setZoomArea({ x1: e.xValue, y1: e.yValue, x2: null, y2: null });
+      setIsSelecting(true);
     }
-  }, [])
+  }, []);
 
   const handleMouseMove = useCallback(
     (e: any) => {
-      if (isSelecting && e && e.xValue !== undefined && e.yValue !== undefined) {
-        setZoomArea((prev) => ({ ...prev, x2: e.xValue, y2: e.yValue }))
+      if (
+        isSelecting &&
+        e &&
+        e.xValue !== undefined &&
+        e.yValue !== undefined
+      ) {
+        setZoomArea((prev) => ({ ...prev, x2: e.xValue, y2: e.yValue }));
       }
     },
     [isSelecting],
-  )
+  );
 
   const handleMouseUp = useCallback(() => {
-    if (isSelecting && zoomArea.x1 !== null && zoomArea.x2 !== null && zoomArea.y1 !== null && zoomArea.y2 !== null) {
-      const x1 = Math.min(zoomArea.x1, zoomArea.x2)
-      const x2 = Math.max(zoomArea.x1, zoomArea.x2)
-      const y1 = Math.min(zoomArea.y1, zoomArea.y2)
-      const y2 = Math.max(zoomArea.y1, zoomArea.y2)
+    if (
+      isSelecting &&
+      zoomArea.x1 !== null &&
+      zoomArea.x2 !== null &&
+      zoomArea.y1 !== null &&
+      zoomArea.y2 !== null
+    ) {
+      const x1 = Math.min(zoomArea.x1, zoomArea.x2);
+      const x2 = Math.max(zoomArea.x1, zoomArea.x2);
+      const y1 = Math.min(zoomArea.y1, zoomArea.y2);
+      const y2 = Math.max(zoomArea.y1, zoomArea.y2);
 
       if (x2 - x1 > 0.1 && y2 - y1 > 1) {
         setZoomedDomain({
           x: [x1, x2],
           y: [y1, y2],
-        })
+        });
       }
     }
-    setZoomArea({ x1: null, y1: null, x2: null, y2: null })
-    setIsSelecting(false)
-  }, [isSelecting, zoomArea])
+    setZoomArea({ x1: null, y1: null, x2: null, y2: null });
+    setIsSelecting(false);
+  }, [isSelecting, zoomArea]);
 
   const resetZoom = useCallback(() => {
-    setZoomedDomain({ x: null, y: null })
-  }, [])
+    setZoomedDomain({ x: null, y: null });
+  }, []);
 
-  const isZoomed = zoomedDomain.x !== null || zoomedDomain.y !== null
+  const isZoomed = zoomedDomain.x !== null || zoomedDomain.y !== null;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-[1800px] mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">Model Benchmark Results</h1>
-            <p className="text-muted-foreground">Technical Trick Terminology Test Suite - 210 tests per model</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+              Model Benchmark Results
+            </h1>
+            <p className="text-muted-foreground">
+              Technical Trick Terminology Test Suite - 210 tests per model
+            </p>
           </div>
           <ThemeToggle />
         </div>
@@ -622,30 +668,48 @@ export default function BenchmarkDashboard() {
             <CardContent>
               <ScrollArea className="h-[400px] xl:h-[600px] pr-4">
                 <div className="space-y-2">
-                  {benchmarkData.map((item, index) => (
-                    <div key={item.model} className="flex items-center gap-3 py-1">
-                      <Checkbox
-                        id={item.model}
-                        checked={selectedModels.has(item.model)}
-                        onCheckedChange={() => toggleModel(item.model)}
-                      />
+                  {benchmarkData.map((item, index) => {
+                    const ProviderIcon = getProviderIconByModelName(item.model);
+                    return (
                       <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: getModelColor(index) }}
-                      />
-                      <label htmlFor={item.model} className="text-sm cursor-pointer flex-1 truncate">
-                        {item.model}
-                      </label>
-                      <span className="text-xs text-muted-foreground">{item.successRate.toFixed(1)}%</span>
-                    </div>
-                  ))}
+                        key={item.model}
+                        className="flex items-center gap-3 py-1"
+                      >
+                        <Checkbox
+                          id={item.model}
+                          checked={selectedModels.has(item.model)}
+                          onCheckedChange={() => toggleModel(item.model)}
+                        />
+                        {ProviderIcon ? (
+                          <ProviderIcon className="w-4 h-4 flex-shrink-0" />
+                        ) : (
+                          <div
+                            className="w-4 h-4 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: getModelColor(index) }}
+                          />
+                        )}
+                        <label
+                          htmlFor={item.model}
+                          className="text-sm cursor-pointer flex-1 truncate"
+                        >
+                          {item.model}
+                        </label>
+                        <span className="text-xs text-muted-foreground">
+                          {item.successRate.toFixed(1)}%
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </ScrollArea>
             </CardContent>
           </Card>
 
           <Tabs defaultValue="success-rate" className="w-full">
-            <TabsList variant="line" className="mb-4 border-b border-border w-full justify-start">
+            <TabsList
+              variant="line"
+              className="mb-4 border-b border-border w-full justify-start"
+            >
               <TabsTrigger value="success-rate">Success Rate</TabsTrigger>
               <TabsTrigger value="cost">Cost</TabsTrigger>
               <TabsTrigger value="speed">Speed</TabsTrigger>
@@ -657,7 +721,9 @@ export default function BenchmarkDashboard() {
               <Frame>
                 <FrameHeader>
                   <FrameTitle>Success Rate by Model</FrameTitle>
-                  <FrameDescription>Percentage of correct answers out of 210 tests per model</FrameDescription>
+                  <FrameDescription>
+                    Percentage of correct answers out of 210 tests per model
+                  </FrameDescription>
                 </FrameHeader>
                 <FramePanel>
                   <div style={{ height: chartHeight }}>
@@ -665,9 +731,18 @@ export default function BenchmarkDashboard() {
                       <BarChart
                         data={successRateData}
                         layout="vertical"
-                        margin={{ top: 5, right: 30, left: yAxisWidth - 100, bottom: 5 }}
+                        margin={{
+                          top: 5,
+                          right: 30,
+                          left: yAxisWidth - 100,
+                          bottom: 5,
+                        }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} vertical={true} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          horizontal={false}
+                          vertical={true}
+                        />
                         <XAxis type="number" domain={[0, 100]} unit="%" />
                         <YAxis
                           type="category"
@@ -678,7 +753,12 @@ export default function BenchmarkDashboard() {
                           interval={0}
                         />
                         <Tooltip
-                          content={<CustomBarTooltip valueLabel="Success Rate" valueSuffix="%" />}
+                          content={
+                            <CustomBarTooltip
+                              valueLabel="Success Rate"
+                              valueSuffix="%"
+                            />
+                          }
                           cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
                         />
                         <Bar dataKey="successRate" radius={[0, 4, 4, 0]}>
@@ -698,7 +778,9 @@ export default function BenchmarkDashboard() {
               <Frame>
                 <FrameHeader>
                   <FrameTitle>Cost per Test</FrameTitle>
-                  <FrameDescription>Average cost per test in cents (lower is better)</FrameDescription>
+                  <FrameDescription>
+                    Average cost per test in cents (lower is better)
+                  </FrameDescription>
                 </FrameHeader>
                 <FramePanel>
                   <div style={{ height: chartHeight }}>
@@ -706,9 +788,18 @@ export default function BenchmarkDashboard() {
                       <BarChart
                         data={costData}
                         layout="vertical"
-                        margin={{ top: 5, right: 30, left: yAxisWidth - 100, bottom: 5 }}
+                        margin={{
+                          top: 5,
+                          right: 30,
+                          left: yAxisWidth - 100,
+                          bottom: 5,
+                        }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} vertical={true} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          horizontal={false}
+                          vertical={true}
+                        />
                         <XAxis type="number" unit="¢" />
                         <YAxis
                           type="category"
@@ -719,7 +810,13 @@ export default function BenchmarkDashboard() {
                           interval={0}
                         />
                         <Tooltip
-                          content={<CustomBarTooltip valueLabel="Cost/Test" valueSuffix="¢" valueKey="costCents" />}
+                          content={
+                            <CustomBarTooltip
+                              valueLabel="Cost/Test"
+                              valueSuffix="¢"
+                              valueKey="costCents"
+                            />
+                          }
                           cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
                         />
                         <Bar dataKey="costCents" radius={[0, 4, 4, 0]}>
@@ -739,7 +836,9 @@ export default function BenchmarkDashboard() {
               <Frame>
                 <FrameHeader>
                   <FrameTitle>Response Speed</FrameTitle>
-                  <FrameDescription>Average response time in seconds (lower is better)</FrameDescription>
+                  <FrameDescription>
+                    Average response time in seconds (lower is better)
+                  </FrameDescription>
                 </FrameHeader>
                 <FramePanel>
                   <div style={{ height: chartHeight }}>
@@ -747,9 +846,18 @@ export default function BenchmarkDashboard() {
                       <BarChart
                         data={speedData}
                         layout="vertical"
-                        margin={{ top: 5, right: 30, left: yAxisWidth - 100, bottom: 5 }}
+                        margin={{
+                          top: 5,
+                          right: 30,
+                          left: yAxisWidth - 100,
+                          bottom: 5,
+                        }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} vertical={true} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          horizontal={false}
+                          vertical={true}
+                        />
                         <XAxis type="number" unit="s" />
                         <YAxis
                           type="category"
@@ -760,7 +868,13 @@ export default function BenchmarkDashboard() {
                           interval={0}
                         />
                         <Tooltip
-                          content={<CustomBarTooltip valueLabel="Avg Time" valueSuffix="s" valueKey="speedSeconds" />}
+                          content={
+                            <CustomBarTooltip
+                              valueLabel="Avg Time"
+                              valueSuffix="s"
+                              valueKey="speedSeconds"
+                            />
+                          }
                           cursor={{ fill: "rgba(128, 128, 128, 0.1)" }}
                         />
                         <Bar dataKey="speedSeconds" radius={[0, 4, 4, 0]}>
@@ -783,7 +897,8 @@ export default function BenchmarkDashboard() {
                     <div>
                       <FrameTitle>Performance vs Total Cost</FrameTitle>
                       <FrameDescription>
-                        Top-left is ideal: higher accuracy, lower total cost. Click and drag to zoom.
+                        Top-left is ideal: higher accuracy, lower total cost.
+                        Click and drag to zoom.
                       </FrameDescription>
                     </div>
                     {isZoomed && (
@@ -804,8 +919,19 @@ export default function BenchmarkDashboard() {
                         onMouseLeave={handleMouseUp}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" dataKey="x" name="Total Cost" unit="$" domain={xDomain} allowDataOverflow>
-                          <Label value="Total Cost ($)" offset={-10} position="insideBottom" />
+                        <XAxis
+                          type="number"
+                          dataKey="x"
+                          name="Total Cost"
+                          unit="$"
+                          domain={xDomain}
+                          allowDataOverflow
+                        >
+                          <Label
+                            value="Total Cost ($)"
+                            offset={-10}
+                            position="insideBottom"
+                          />
                         </XAxis>
                         <YAxis
                           type="number"
@@ -840,20 +966,32 @@ export default function BenchmarkDashboard() {
                           )}
                         {hoveredPoint &&
                           (() => {
-                            const entry = combinedData.find((d) => d.model === hoveredPoint)
-                            if (!entry) return null
+                            const entry = combinedData.find(
+                              (d) => d.model === hoveredPoint,
+                            );
+                            if (!entry) return null;
                             return (
                               <>
-                                <ReferenceLine x={entry.x} stroke={entry.color} strokeDasharray="5 5" strokeWidth={2} />
-                                <ReferenceLine y={entry.y} stroke={entry.color} strokeDasharray="5 5" strokeWidth={2} />
+                                <ReferenceLine
+                                  x={entry.x}
+                                  stroke={entry.color}
+                                  strokeDasharray="5 5"
+                                  strokeWidth={2}
+                                />
+                                <ReferenceLine
+                                  y={entry.y}
+                                  stroke={entry.color}
+                                  strokeDasharray="5 5"
+                                  strokeWidth={2}
+                                />
                               </>
-                            )
+                            );
                           })()}
                         <Tooltip
                           cursor={false}
                           content={({ active, payload }) => {
                             if (active && payload && payload.length) {
-                              const data = payload[0].payload
+                              const data = payload[0].payload;
                               return (
                                 <div className="bg-card text-card-foreground border border-border rounded-lg p-3 shadow-lg">
                                   <p className="font-semibold">{data.model}</p>
@@ -864,9 +1002,9 @@ export default function BenchmarkDashboard() {
                                     Total Cost: ${data.totalCost.toFixed(4)}
                                   </p>
                                 </div>
-                              )
+                              );
                             }
-                            return null
+                            return null;
                           }}
                         />
                         <Scatter data={combinedData} shape="circle">
@@ -883,7 +1021,11 @@ export default function BenchmarkDashboard() {
                             dataKey="model"
                             position="top"
                             offset={12}
-                            style={{ fontSize: 10, fill: "#888888", pointerEvents: "none" }}
+                            style={{
+                              fontSize: 10,
+                              fill: "#888888",
+                              pointerEvents: "none",
+                            }}
                             fill="#888888"
                           />
                         </Scatter>
@@ -897,5 +1039,5 @@ export default function BenchmarkDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }
