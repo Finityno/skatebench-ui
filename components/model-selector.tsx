@@ -66,19 +66,23 @@ function getUniqueProviderIcons(
   return Array.from(providers.values());
 }
 
+type QuickSelectMode = "all" | "none" | "top10" | "custom";
+
 function QuickSelectBadges({
   onSelectAll,
   onSelectNone,
   onSelectTop10,
+  activeMode = "custom",
 }: {
   onSelectAll: () => void;
   onSelectNone: () => void;
   onSelectTop10: () => void;
+  activeMode?: QuickSelectMode;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
       <Badge
-        variant="outline"
+        variant={activeMode === "all" ? "default" : "outline"}
         className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
         onClick={onSelectAll}
         tabIndex={0}
@@ -93,22 +97,7 @@ function QuickSelectBadges({
         All
       </Badge>
       <Badge
-        variant="outline"
-        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-        onClick={onSelectNone}
-        tabIndex={0}
-        role="button"
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onSelectNone();
-          }
-        }}
-      >
-        None
-      </Badge>
-      <Badge
-        variant="outline"
+        variant={activeMode === "top10" ? "default" : "outline"}
         className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
         onClick={onSelectTop10}
         tabIndex={0}
@@ -122,8 +111,44 @@ function QuickSelectBadges({
       >
         Top 10
       </Badge>
+      <Badge
+        variant={activeMode === "none" ? "default" : "outline"}
+        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+        onClick={onSelectNone}
+        tabIndex={0}
+        role="button"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSelectNone();
+          }
+        }}
+      >
+        None
+      </Badge>
     </div>
   );
+}
+
+// Helper to determine the active quick select mode
+function getActiveMode(
+  selectedModels: Set<string>,
+  models: ModelData[],
+): QuickSelectMode {
+  const selectedCount = selectedModels.size;
+  const totalCount = models.length;
+
+  if (selectedCount === 0) return "none";
+  if (selectedCount === totalCount) return "all";
+
+  // Check if exactly top 10 are selected
+  const top10Models = new Set(models.slice(0, 10).map((m) => m.model));
+  if (selectedCount === 10) {
+    const isTop10 = [...selectedModels].every((m) => top10Models.has(m));
+    if (isTop10) return "top10";
+  }
+
+  return "custom";
 }
 
 function CommandModeSelector({
@@ -140,6 +165,7 @@ function CommandModeSelector({
 
   const selectedCount = selectedModels.size;
   const totalCount = models.length;
+  const activeMode = getActiveMode(selectedModels, models);
 
   const uniqueProviderIcons = React.useMemo(
     () => getUniqueProviderIcons(selectedModels, models),
@@ -156,6 +182,7 @@ function CommandModeSelector({
         onSelectAll={onSelectAll}
         onSelectNone={onSelectNone}
         onSelectTop10={onSelectTop10}
+        activeMode={activeMode}
       />
 
       <Popover open={open} onOpenChange={setOpen}>
@@ -270,6 +297,7 @@ function ListModeSelector({
 }: Omit<ModelSelectorProps, "mode">) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
+  const activeMode = getActiveMode(selectedModels, models);
 
   const filteredModelList = React.useMemo(() => {
     if (!searchQuery.trim()) return models;
@@ -295,6 +323,7 @@ function ListModeSelector({
         onSelectAll={onSelectAll}
         onSelectNone={onSelectNone}
         onSelectTop10={onSelectTop10}
+        activeMode={activeMode}
       />
       <input
         type="text"
