@@ -89,16 +89,11 @@ export function Combobox({
           </Button>
         )}
       />
-      <PopoverContent
-        className="w-[--anchor-width] min-w-[--anchor-width] p-0"
-        sideOffset={4}
-      >
-        <Command className="w-full">
+      <PopoverContent className="p-0" sideOffset={4} matchTriggerWidth>
+        <Command>
           <CommandInput placeholder={searchPlaceholder} />
-          <CommandList className="max-h-[300px] w-full">
-            <CommandEmpty className="py-6 text-center text-sm">
-              {emptyText}
-            </CommandEmpty>
+          <CommandList className="max-h-[300px]">
+            <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
               {items.map((item) => {
                 const isSelected = selectedValues.has(item.value);

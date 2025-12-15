@@ -194,16 +194,11 @@ function CommandModeSelector({
             </Button>
           )}
         />
-        <PopoverContent
-          className="w-[--anchor-width] min-w-[--anchor-width] p-0"
-          sideOffset={4}
-        >
-          <Command className="w-full">
+        <PopoverContent className="p-0" sideOffset={4} matchTriggerWidth>
+          <Command>
             <CommandInput placeholder="Search models..." />
-            <CommandList className="max-h-[300px] w-full">
-              <CommandEmpty className="py-6 text-center text-sm">
-                No model found.
-              </CommandEmpty>
+            <CommandList className="max-h-[300px]">
+              <CommandEmpty>No model found.</CommandEmpty>
               <CommandGroup>
                 {models.map((item) => {
                   const isSelected = selectedModels.has(item.model);
