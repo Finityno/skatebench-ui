@@ -1269,7 +1269,7 @@ export default function BenchmarkDashboard() {
                       <FrameTitle>Performance vs Total Cost</FrameTitle>
                       <FrameDescription>
                         Top-left is ideal: higher accuracy, lower total cost.
-                        Click and drag to zoom.
+                        Click on models to remove them.
                       </FrameDescription>
                     </div>
                     {isZoomed && (
