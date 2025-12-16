@@ -534,6 +534,19 @@ export default function BenchmarkDashboard() {
             <div className="hidden xl:block pt-[104px] w-[280px] shrink-0">
               <Card className="h-fit sticky top-8">
                 <CardHeader className="pb-3">
+                  <button
+                    onClick={() => setSidebarCollapsed(true)}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
+                    aria-label="Collapse model selector"
+                  >
+                    <HugeiconsIcon
+                      icon={ArrowLeft01Icon}
+                      size={14}
+                      color="currentColor"
+                      strokeWidth={1.5}
+                    />
+                    Collapse
+                  </button>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">Model Selector</CardTitle>
                     <div className="flex gap-1 items-center">
@@ -572,19 +585,6 @@ export default function BenchmarkDashboard() {
                       >
                         {useCommandSelector ? "Command" : "List"}
                       </Badge>
-                      <button
-                        onClick={() => setSidebarCollapsed(true)}
-                        className="p-1.5 rounded-md border border-border hover:bg-accent transition-colors ml-1"
-                        aria-label="Collapse model selector"
-                        title="Collapse sidebar"
-                      >
-                        <HugeiconsIcon
-                          icon={ArrowLeft01Icon}
-                          size={14}
-                          color="currentColor"
-                          strokeWidth={1.5}
-                        />
-                      </button>
                     </div>
                   </div>
                   <CardDescription>
