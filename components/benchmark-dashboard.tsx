@@ -347,7 +347,7 @@ export default function BenchmarkDashboard() {
 
   const chartHeight = useMemo(() => {
     const baseHeight = 400;
-    const perModelHeight = 28;
+    const perModelHeight = 36;
     const minHeight = 300;
     const calculatedHeight = Math.max(
       minHeight,
