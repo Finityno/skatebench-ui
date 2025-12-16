@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/frame";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getProviderIconByModelName } from "@/lib/provider-icons";
 import OpenAIIcon from "@/components/icons/providers/openai";
@@ -51,8 +52,22 @@ import QwenIcon from "@/components/icons/providers/qwen";
 import KimiIcon from "@/components/icons/providers/kimi";
 import ZAIIcon from "@/components/icons/providers/zai";
 import benchmarkResults from "@/data/benchmark-results.json";
+import { CalendarIcon } from "@hugeicons/core-free-icons";
 
 const benchmarkData = benchmarkResults.rankings;
+const benchmarkMetadata = benchmarkResults.metadata;
+
+// Format the timestamp for display
+function formatBenchmarkTimestamp(isoTimestamp: string): string {
+  const date = new Date(isoTimestamp);
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const seconds = date.getSeconds().toString().padStart(2, "0");
+  return `${day}.${month}.${year}, ${hours}:${minutes}:${seconds}`;
+}
 
 const MODEL_COLORS = [
   "#22c55e", // green
@@ -634,9 +649,22 @@ export default function BenchmarkDashboard() {
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                   Model Benchmark Results
                 </h1>
-                <p className="text-muted-foreground">
-                  Technical Trick Terminology Test Suite - 210 tests per model
-                </p>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <p className="text-muted-foreground">
+                    Technical Trick Terminology Test Suite - 210 tests per model
+                  </p>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground">
+                    <HugeiconsIcon
+                      icon={CalendarIcon}
+                      size={14}
+                      color="currentColor"
+                      strokeWidth={1.5}
+                    />
+                    <span>
+                      {formatBenchmarkTimestamp(benchmarkMetadata.timestamp)}
+                    </span>
+                  </div>
+                </div>
               </div>
               <ThemeToggle />
             </div>
