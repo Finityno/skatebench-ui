@@ -508,106 +508,123 @@ export default function BenchmarkDashboard() {
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-[1800px] mx-auto">
         <div className="flex gap-6">
-          {/* Collapsed sidebar toggle */}
-          {sidebarCollapsed && (
-            <div className="hidden xl:flex flex-col pt-[104px]">
-              <button
-                onClick={() => setSidebarCollapsed(false)}
-                className="sticky top-8 flex flex-col items-center gap-2 px-2 py-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors"
-                aria-label="Open model selector"
+          {/* Sidebar container with animation */}
+          <div
+            className={`hidden xl:block pt-[104px] shrink-0 transition-all duration-300 ease-in-out ${
+              sidebarCollapsed ? "w-[40px]" : "w-[280px]"
+            }`}
+          >
+            <div className="sticky top-8">
+              {/* Collapsed state */}
+              <div
+                className={`transition-all duration-300 ease-in-out ${
+                  sidebarCollapsed
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95 absolute pointer-events-none"
+                }`}
               >
-                <HugeiconsIcon
-                  icon={ArrowRight01Icon}
-                  size={18}
-                  color="currentColor"
-                  strokeWidth={1.5}
-                />
-                <span className="text-xs text-muted-foreground [writing-mode:vertical-lr] rotate-180">
-                  Models
-                </span>
-              </button>
-            </div>
-          )}
-
-          {/* Model Selector */}
-          {!sidebarCollapsed && (
-            <div className="hidden xl:block pt-[104px] w-[280px] shrink-0">
-              <Card className="h-fit sticky top-8">
-                <CardHeader className="pb-3">
-                  <button
-                    onClick={() => setSidebarCollapsed(true)}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
-                    aria-label="Collapse model selector"
-                  >
-                    <HugeiconsIcon
-                      icon={ArrowLeft01Icon}
-                      size={14}
-                      color="currentColor"
-                      strokeWidth={1.5}
-                    />
-                    Collapse
-                  </button>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Model Selector</CardTitle>
-                    <div className="flex gap-1 items-center">
-                      <Badge
-                        variant={showPercentages ? "default" : "outline"}
-                        className="cursor-pointer text-xs"
-                        onClick={() => setShowPercentages(!showPercentages)}
-                        tabIndex={0}
-                        role="switch"
-                        aria-checked={showPercentages}
-                        aria-label="Show percentages"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setShowPercentages(!showPercentages);
-                          }
-                        }}
-                      >
-                        %
-                      </Badge>
-                      <Badge
-                        variant={useCommandSelector ? "default" : "outline"}
-                        className="cursor-pointer text-xs"
-                        onClick={() =>
-                          setUseCommandSelector(!useCommandSelector)
-                        }
-                        tabIndex={0}
-                        role="switch"
-                        aria-checked={useCommandSelector}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setUseCommandSelector(!useCommandSelector);
-                          }
-                        }}
-                      >
-                        {useCommandSelector ? "Command" : "List"}
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardDescription>
-                    {selectedModels.size} of {benchmarkData.length} models
-                    selected
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <ModelSelector
-                    models={benchmarkData}
-                    selectedModels={selectedModels}
-                    onToggleModel={toggleModel}
-                    onSelectAll={selectAll}
-                    onSelectNone={selectNone}
-                    onSelectTop10={selectTop10}
-                    getModelColor={getModelColor}
-                    showPercentages={showPercentages}
-                    mode={useCommandSelector ? "command" : "list"}
+                <button
+                  onClick={() => setSidebarCollapsed(false)}
+                  className="flex flex-col items-center gap-2 px-2 py-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors"
+                  aria-label="Open model selector"
+                >
+                  <HugeiconsIcon
+                    icon={ArrowRight01Icon}
+                    size={18}
+                    color="currentColor"
+                    strokeWidth={1.5}
                   />
-                </CardContent>
-              </Card>
+                  <span className="text-xs text-muted-foreground [writing-mode:vertical-lr] rotate-180">
+                    Models
+                  </span>
+                </button>
+              </div>
+
+              {/* Expanded state */}
+              <div
+                className={`transition-all duration-300 ease-in-out ${
+                  sidebarCollapsed
+                    ? "opacity-0 scale-95 absolute pointer-events-none"
+                    : "opacity-100 scale-100"
+                }`}
+              >
+                <Card className="h-fit">
+                  <CardHeader className="pb-3">
+                    <button
+                      onClick={() => setSidebarCollapsed(true)}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
+                      aria-label="Collapse model selector"
+                    >
+                      <HugeiconsIcon
+                        icon={ArrowLeft01Icon}
+                        size={14}
+                        color="currentColor"
+                        strokeWidth={1.5}
+                      />
+                      Collapse
+                    </button>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Model Selector</CardTitle>
+                      <div className="flex gap-1 items-center">
+                        <Badge
+                          variant={showPercentages ? "default" : "outline"}
+                          className="cursor-pointer text-xs"
+                          onClick={() => setShowPercentages(!showPercentages)}
+                          tabIndex={0}
+                          role="switch"
+                          aria-checked={showPercentages}
+                          aria-label="Show percentages"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setShowPercentages(!showPercentages);
+                            }
+                          }}
+                        >
+                          %
+                        </Badge>
+                        <Badge
+                          variant={useCommandSelector ? "default" : "outline"}
+                          className="cursor-pointer text-xs"
+                          onClick={() =>
+                            setUseCommandSelector(!useCommandSelector)
+                          }
+                          tabIndex={0}
+                          role="switch"
+                          aria-checked={useCommandSelector}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setUseCommandSelector(!useCommandSelector);
+                            }
+                          }}
+                        >
+                          {useCommandSelector ? "Command" : "List"}
+                        </Badge>
+                      </div>
+                    </div>
+                    <CardDescription>
+                      {selectedModels.size} of {benchmarkData.length} models
+                      selected
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <ModelSelector
+                      models={benchmarkData}
+                      selectedModels={selectedModels}
+                      onToggleModel={toggleModel}
+                      onSelectAll={selectAll}
+                      onSelectNone={selectNone}
+                      onSelectTop10={selectTop10}
+                      getModelColor={getModelColor}
+                      showPercentages={showPercentages}
+                      mode={useCommandSelector ? "command" : "list"}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          )}
+          </div>
 
           {/* Main content */}
           <div className="flex-1 min-w-0 space-y-6">
