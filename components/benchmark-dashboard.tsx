@@ -499,16 +499,17 @@ export default function BenchmarkDashboard() {
             </Card>
             <div className="flex-1 min-w-0 space-y-6">
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <SkateboardIcon className="w-9 h-9 md:w-11 md:h-11 text-foreground" />
+                <div className="flex items-center gap-4">
+                  <SkateboardIcon className="w-12 h-12 md:w-14 md:h-14 text-foreground shrink-0" />
+                  <div className="space-y-0.5">
                     <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                       SkateBench
                     </h1>
+                    <p className="text-muted-foreground">
+                      Technical Trick Terminology Test Suite - 210 tests per
+                      model
+                    </p>
                   </div>
-                  <p className="text-muted-foreground">
-                    Technical Trick Terminology Test Suite - 210 tests per model
-                  </p>
                 </div>
                 <Skeleton className="w-9 h-9 rounded-md" />
               </div>
@@ -649,16 +650,16 @@ export default function BenchmarkDashboard() {
           <div className="flex-1 min-w-0 overflow-hidden space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <SkateboardIcon className="w-9 h-9 md:w-11 md:h-11 text-foreground" />
+              <div className="flex items-center gap-4">
+                <SkateboardIcon className="w-12 h-12 md:w-14 md:h-14 text-foreground shrink-0" />
+                <div className="space-y-0.5">
                   <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                     SkateBench
                   </h1>
+                  <p className="text-muted-foreground">
+                    Technical Trick Terminology Test Suite - 210 tests per model
+                  </p>
                 </div>
-                <p className="text-muted-foreground">
-                  Technical Trick Terminology Test Suite - 210 tests per model
-                </p>
               </div>
               <ButtonGroup>
                 <ButtonGroupText className="text-muted-foreground gap-1.5">
