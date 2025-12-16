@@ -51,6 +51,7 @@ import GrokIcon from "@/components/icons/providers/grok";
 import QwenIcon from "@/components/icons/providers/qwen";
 import KimiIcon from "@/components/icons/providers/kimi";
 import ZAIIcon from "@/components/icons/providers/zai";
+import SkateboardIcon from "@/components/icons/skateboard";
 import benchmarkResults from "@/data/benchmark-results.json";
 import { CalendarIcon } from "@hugeicons/core-free-icons";
 
@@ -499,9 +500,12 @@ export default function BenchmarkDashboard() {
             <div className="flex-1 min-w-0 space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                    Model Benchmark Results
-                  </h1>
+                  <div className="flex items-center gap-3">
+                    <SkateboardIcon className="w-9 h-9 md:w-11 md:h-11 text-foreground" />
+                    <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                      SkateBench
+                    </h1>
+                  </div>
                   <p className="text-muted-foreground">
                     Technical Trick Terminology Test Suite - 210 tests per model
                   </p>
@@ -646,9 +650,12 @@ export default function BenchmarkDashboard() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                  Model Benchmark Results
-                </h1>
+                <div className="flex items-center gap-3">
+                  <SkateboardIcon className="w-9 h-9 md:w-11 md:h-11 text-foreground" />
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                    SkateBench
+                  </h1>
+                </div>
                 <p className="text-muted-foreground">
                   Technical Trick Terminology Test Suite - 210 tests per model
                 </p>
