@@ -525,7 +525,7 @@ export default function BenchmarkDashboard() {
               >
                 <button
                   onClick={() => setSidebarCollapsed(false)}
-                  className="flex flex-col items-center gap-2 px-2 py-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors"
+                  className="flex flex-col items-center gap-2 px-2 py-4 rounded-lg border border-border bg-card hover:bg-muted/50 dark:hover:bg-muted transition-colors"
                   aria-label="Open model selector"
                 >
                   <HugeiconsIcon
