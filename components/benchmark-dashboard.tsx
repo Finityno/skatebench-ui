@@ -649,24 +649,24 @@ export default function BenchmarkDashboard() {
                 <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                   Model Benchmark Results
                 </h1>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <p className="text-muted-foreground">
-                    Technical Trick Terminology Test Suite - 210 tests per model
-                  </p>
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground">
-                    <HugeiconsIcon
-                      icon={CalendarIcon}
-                      size={14}
-                      color="currentColor"
-                      strokeWidth={1.5}
-                    />
-                    <span>
-                      {formatBenchmarkTimestamp(benchmarkMetadata.timestamp)}
-                    </span>
-                  </div>
-                </div>
+                <p className="text-muted-foreground">
+                  Technical Trick Terminology Test Suite - 210 tests per model
+                </p>
               </div>
-              <ThemeToggle />
+              <ButtonGroup>
+                <ButtonGroupText className="text-muted-foreground gap-1.5">
+                  <HugeiconsIcon
+                    icon={CalendarIcon}
+                    size={14}
+                    color="currentColor"
+                    strokeWidth={1.5}
+                  />
+                  <span>
+                    {formatBenchmarkTimestamp(benchmarkMetadata.timestamp)}
+                  </span>
+                </ButtonGroupText>
+                <ThemeToggle />
+              </ButtonGroup>
             </div>
 
             {/* Mobile Model Selector */}
