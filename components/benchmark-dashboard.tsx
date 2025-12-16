@@ -627,7 +627,7 @@ export default function BenchmarkDashboard() {
           </div>
 
           {/* Main content */}
-          <div className="flex-1 min-w-0 space-y-6">
+          <div className="flex-1 min-w-0 overflow-hidden space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="space-y-1">
@@ -744,12 +744,16 @@ export default function BenchmarkDashboard() {
                     </div>
                   </FrameHeader>
                   <FramePanel>
-                    <div style={{ height: isHorizontal ? chartHeight : 500 }}>
+                    <div
+                      style={{ height: isHorizontal ? chartHeight : 700 }}
+                      className={
+                        isHorizontal ? "" : "flex items-center justify-center"
+                      }
+                    >
                       <ResponsiveContainer
                         width="100%"
-                        height="100%"
-                        minWidth={0}
-                        minHeight={0}
+                        height={isHorizontal ? "100%" : 700}
+                        debounce={100}
                       >
                         <BarChart
                           key={`success-${successRateData.length}`}
@@ -759,17 +763,17 @@ export default function BenchmarkDashboard() {
                             isHorizontal
                               ? {
                                   top: 5,
-                                  right: isMobile ? 10 : 30,
-                                  left: isMobile ? 10 : yAxisWidth - 100,
+                                  right: 20,
+                                  left: 10,
                                   bottom: 5,
                                 }
-                              : { top: 20, right: 10, left: 10, bottom: 100 }
+                              : { top: 20, right: 20, left: 10, bottom: 20 }
                           }
                         >
                           <CartesianGrid
                             strokeDasharray="3 3"
-                            horizontal={isHorizontal ? false : true}
-                            vertical={isHorizontal ? true : false}
+                            vertical={false}
+                            className="stroke-border"
                           />
                           {isHorizontal ? (
                             <>
@@ -855,12 +859,16 @@ export default function BenchmarkDashboard() {
                     </div>
                   </FrameHeader>
                   <FramePanel>
-                    <div style={{ height: isHorizontal ? chartHeight : 500 }}>
+                    <div
+                      style={{ height: isHorizontal ? chartHeight : 700 }}
+                      className={
+                        isHorizontal ? "" : "flex items-center justify-center"
+                      }
+                    >
                       <ResponsiveContainer
                         width="100%"
-                        height="100%"
-                        minWidth={0}
-                        minHeight={0}
+                        height={isHorizontal ? "100%" : 700}
+                        debounce={100}
                       >
                         <BarChart
                           key={`cost-${costData.length}`}
@@ -870,17 +878,17 @@ export default function BenchmarkDashboard() {
                             isHorizontal
                               ? {
                                   top: 5,
-                                  right: isMobile ? 10 : 30,
-                                  left: isMobile ? 10 : yAxisWidth - 100,
+                                  right: 20,
+                                  left: 10,
                                   bottom: 5,
                                 }
-                              : { top: 20, right: 10, left: 10, bottom: 100 }
+                              : { top: 20, right: 20, left: 10, bottom: 20 }
                           }
                         >
                           <CartesianGrid
                             strokeDasharray="3 3"
-                            horizontal={isHorizontal ? false : true}
-                            vertical={isHorizontal ? true : false}
+                            vertical={false}
+                            className="stroke-border"
                           />
                           {isHorizontal ? (
                             <>
@@ -967,12 +975,16 @@ export default function BenchmarkDashboard() {
                     </div>
                   </FrameHeader>
                   <FramePanel>
-                    <div style={{ height: isHorizontal ? chartHeight : 500 }}>
+                    <div
+                      style={{ height: isHorizontal ? chartHeight : 700 }}
+                      className={
+                        isHorizontal ? "" : "flex items-center justify-center"
+                      }
+                    >
                       <ResponsiveContainer
                         width="100%"
-                        height="100%"
-                        minWidth={0}
-                        minHeight={0}
+                        height={isHorizontal ? "100%" : 700}
+                        debounce={100}
                       >
                         <BarChart
                           key={`speed-${speedData.length}`}
@@ -982,17 +994,17 @@ export default function BenchmarkDashboard() {
                             isHorizontal
                               ? {
                                   top: 5,
-                                  right: isMobile ? 10 : 30,
-                                  left: isMobile ? 10 : yAxisWidth - 100,
+                                  right: 20,
+                                  left: 10,
                                   bottom: 5,
                                 }
-                              : { top: 20, right: 10, left: 10, bottom: 100 }
+                              : { top: 20, right: 20, left: 10, bottom: 20 }
                           }
                         >
                           <CartesianGrid
                             strokeDasharray="3 3"
-                            horizontal={isHorizontal ? false : true}
-                            vertical={isHorizontal ? true : false}
+                            vertical={false}
+                            className="stroke-border"
                           />
                           {isHorizontal ? (
                             <>
@@ -1069,135 +1081,130 @@ export default function BenchmarkDashboard() {
                     </div>
                   </FrameHeader>
                   <FramePanel>
-                    <div className="h-[600px]">
-                      <ResponsiveContainer
-                        width="100%"
-                        height="100%"
-                        minWidth={0}
-                        minHeight={0}
+                    <ResponsiveContainer
+                      width="100%"
+                      height={700}
+                      debounce={100}
+                    >
+                      <ScatterChart
+                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                       >
-                        <ScatterChart
-                          margin={{ top: 40, right: 30, left: 20, bottom: 60 }}
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                          className="stroke-border"
+                        />
+                        <XAxis
+                          type="number"
+                          dataKey="x"
+                          name="Total Cost"
+                          unit="$"
+                          domain={xDomain}
+                          allowDataOverflow
+                          tickCount={6}
+                          tickFormatter={(value) => `${Math.round(value)}`}
                         >
-                          <CartesianGrid
-                            strokeDasharray="1 3"
-                            stroke="hsl(0 0% 35%)"
+                          <Label
+                            value="Total Cost ($)"
+                            offset={-10}
+                            position="insideBottom"
                           />
-                          <XAxis
-                            type="number"
-                            dataKey="x"
-                            name="Total Cost"
-                            unit="$"
-                            domain={xDomain}
-                            allowDataOverflow
-                            tickCount={6}
-                            tickFormatter={(value) => `${Math.round(value)}`}
-                          >
-                            <Label
-                              value="Total Cost ($)"
-                              offset={-10}
-                              position="insideBottom"
-                            />
-                          </XAxis>
-                          <YAxis
-                            type="number"
-                            dataKey="y"
-                            name="Success Rate"
-                            unit="%"
-                            domain={yDomain}
-                            allowDataOverflow
-                          >
-                            <Label
-                              value="Success Rate (%)"
-                              angle={-90}
-                              position="insideLeft"
-                              style={{ textAnchor: "middle" }}
-                            />
-                          </YAxis>
-                          <ZAxis range={[80, 80]} />
-                          {hoveredPoint &&
-                            (() => {
-                              const entry = combinedData.find(
-                                (d) => d.model === hoveredPoint,
-                              );
-                              if (!entry) return null;
+                        </XAxis>
+                        <YAxis
+                          type="number"
+                          dataKey="y"
+                          name="Success Rate"
+                          unit="%"
+                          domain={yDomain}
+                          allowDataOverflow
+                        >
+                          <Label
+                            value="Success Rate (%)"
+                            angle={-90}
+                            position="insideLeft"
+                            style={{ textAnchor: "middle" }}
+                          />
+                        </YAxis>
+                        <ZAxis range={[80, 80]} />
+                        {hoveredPoint &&
+                          (() => {
+                            const entry = combinedData.find(
+                              (d) => d.model === hoveredPoint,
+                            );
+                            if (!entry) return null;
+                            return (
+                              <>
+                                <ReferenceLine
+                                  x={entry.x}
+                                  stroke="hsl(0 0% 50%)"
+                                  strokeDasharray="5 5"
+                                  strokeWidth={1}
+                                />
+                                <ReferenceLine
+                                  y={entry.y}
+                                  stroke="hsl(0 0% 50%)"
+                                  strokeDasharray="5 5"
+                                  strokeWidth={1}
+                                />
+                              </>
+                            );
+                          })()}
+                        <Tooltip
+                          cursor={false}
+                          isAnimationActive={false}
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
                               return (
-                                <>
-                                  <ReferenceLine
-                                    x={entry.x}
-                                    stroke="hsl(0 0% 50%)"
-                                    strokeDasharray="5 5"
-                                    strokeWidth={1}
-                                  />
-                                  <ReferenceLine
-                                    y={entry.y}
-                                    stroke="hsl(0 0% 50%)"
-                                    strokeDasharray="5 5"
-                                    strokeWidth={1}
-                                  />
-                                </>
+                                <div className="bg-card text-card-foreground border border-border rounded-lg p-3 shadow-lg">
+                                  <p className="font-semibold">{data.model}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Success Rate: {data.successRate.toFixed(2)}%
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Total Cost: ${data.totalCost.toFixed(4)}
+                                  </p>
+                                </div>
                               );
-                            })()}
-                          <Tooltip
-                            cursor={false}
-                            isAnimationActive={false}
-                            content={({ active, payload }) => {
-                              if (active && payload && payload.length) {
-                                const data = payload[0].payload;
-                                return (
-                                  <div className="bg-card text-card-foreground border border-border rounded-lg p-3 shadow-lg">
-                                    <p className="font-semibold">
-                                      {data.model}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                      Success Rate:{" "}
-                                      {data.successRate.toFixed(2)}%
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                      Total Cost: ${data.totalCost.toFixed(4)}
-                                    </p>
-                                  </div>
-                                );
-                              }
-                              return null;
+                            }
+                            return null;
+                          }}
+                        />
+                        <Scatter
+                          data={combinedData}
+                          shape={<CustomScatterShape />}
+                          isAnimationActive={false}
+                          onClick={(data: any) => {
+                            if (data?.payload?.model) {
+                              const model = data.payload.model;
+                              setSelectedModels((prev) => {
+                                const newSet = new Set(prev);
+                                newSet.delete(model);
+                                return newSet;
+                              });
+                              setHoveredPoint(null);
+                            }
+                          }}
+                          onMouseEnter={(data: any) => {
+                            if (data?.payload?.model) {
+                              setHoveredPoint(data.payload.model);
+                            }
+                          }}
+                          onMouseLeave={() => setHoveredPoint(null)}
+                        >
+                          <LabelList
+                            dataKey="model"
+                            position="top"
+                            offset={12}
+                            style={{
+                              fontSize: 10,
+                              pointerEvents: "none",
                             }}
+                            className="fill-foreground"
                           />
-                          <Scatter
-                            data={combinedData}
-                            shape={<CustomScatterShape />}
-                            isAnimationActive={false}
-                            onClick={(data: any) => {
-                              if (data?.payload?.model) {
-                                const model = data.payload.model;
-                                setSelectedModels((prev) => {
-                                  const newSet = new Set(prev);
-                                  newSet.delete(model);
-                                  return newSet;
-                                });
-                                setHoveredPoint(null);
-                              }
-                            }}
-                            onMouseEnter={(data: any) => {
-                              if (data?.payload?.model) {
-                                setHoveredPoint(data.payload.model);
-                              }
-                            }}
-                            onMouseLeave={() => setHoveredPoint(null)}
-                          >
-                            <LabelList
-                              dataKey="model"
-                              position="top"
-                              offset={12}
-                              style={{
-                                fontSize: 10,
-                                pointerEvents: "none",
-                              }}
-                              className="fill-foreground"
-                            />
-                          </Scatter>
-                        </ScatterChart>
-                      </ResponsiveContainer>
-                    </div>
+                        </Scatter>
+                      </ScatterChart>
+                    </ResponsiveContainer>
                   </FramePanel>
                 </Frame>
               </TabsContent>
