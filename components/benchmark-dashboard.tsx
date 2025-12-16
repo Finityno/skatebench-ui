@@ -849,6 +849,15 @@ export default function BenchmarkDashboard() {
                             {successRateData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
+                            <LabelList
+                              position={isHorizontal ? "right" : "top"}
+                              offset={12}
+                              className="fill-foreground"
+                              fontSize={12}
+                              formatter={(value: number) =>
+                                `${value.toFixed(2)}%`
+                              }
+                            />
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
@@ -965,6 +974,13 @@ export default function BenchmarkDashboard() {
                             {costData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
+                            <LabelList
+                              position={isHorizontal ? "right" : "top"}
+                              offset={12}
+                              className="fill-foreground"
+                              fontSize={12}
+                              formatter={(value: number) => value.toFixed(2)}
+                            />
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
@@ -1081,6 +1097,15 @@ export default function BenchmarkDashboard() {
                             {speedData.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
+                            <LabelList
+                              position={isHorizontal ? "right" : "top"}
+                              offset={12}
+                              className="fill-foreground"
+                              fontSize={12}
+                              formatter={(value: number) =>
+                                `${value.toFixed(2)}s`
+                              }
+                            />
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
