@@ -854,9 +854,12 @@ export default function BenchmarkDashboard() {
                               offset={12}
                               className="fill-foreground"
                               fontSize={12}
-                              formatter={(value: number) =>
-                                `${value.toFixed(2)}%`
-                              }
+                              formatter={(value: number) => {
+                                if (filteredData.length > 15 && value >= 10) {
+                                  return `${value.toFixed(1)}%`;
+                                }
+                                return `${value.toFixed(2)}%`;
+                              }}
                             />
                           </Bar>
                         </BarChart>
